@@ -11,17 +11,17 @@ namespace BattleShipLibrary
         private List<(int, int)> positionsBateau;
         private List<(int, int)> positionsBateauAdversaire;
         private const char TOUCHER = '#', MANQUER = '*', BATEAU = '■', VIDE = '~';
-        public Settings Setting { get; set; }
+        public Settings settings { get; set; }
 
         public Battleship(Settings settings)
         {
-            this.Setting = settings;
+            this.settings = settings;
 
-            grille = new char[Setting.HauteurTableau, Setting.LargeurTableau];
-            grilleAdversaire = new char[Setting.HauteurTableau, Setting.LargeurTableau];
+            grille = new char[settings.HauteurTableau, settings.LargeurTableau];
+            grilleAdversaire = new char[settings.HauteurTableau, settings.LargeurTableau];
 
-            for (int i = 0; i < Setting.HauteurTableau; i++)
-                for (int j = 0; j < Setting.LargeurTableau; j++)
+            for (int i = 0; i < settings.HauteurTableau; i++)
+                for (int j = 0; j < settings.LargeurTableau; j++)
                 {
                     grille[i, j] = VIDE;
                     grilleAdversaire[i, j] = VIDE;
@@ -38,15 +38,15 @@ namespace BattleShipLibrary
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write(" y\\x");
-            for (int j = 1; j <= Setting.LargeurTableau; j++)
+            for (int j = 1; j <= settings.LargeurTableau; j++)
                 Console.Write($"[{j,2}]");
             Console.WriteLine();
 
-            for (int i = 0; i < Setting.HauteurTableau; i++)
+            for (int i = 0; i < settings.HauteurTableau; i++)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Write($"[{i + 1,2}]");
-                for (int j = 0; j < Setting.LargeurTableau; j++)
+                for (int j = 0; j < settings.LargeurTableau; j++)
                 {
                     char c = plateau[i, j];
                     switch (c)
@@ -101,7 +101,7 @@ namespace BattleShipLibrary
                     y = int.Parse(parts[1]) - 1;
 
 
-                    if (x < 0 || x >= Setting.LargeurTableau || y < 0 || y >= Setting.HauteurTableau)
+                    if (x < 0 || x >= settings.LargeurTableau || y < 0 || y >= settings.HauteurTableau)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Position hors de la grille, réessayez.");
@@ -125,6 +125,26 @@ namespace BattleShipLibrary
     
         public List<(int, int)> PlacerBateau()
         {
+            for (int i = 0; i< settings.NumberOfShip; i++)
+            {
+                FormShipEnum formShip = settings.FormShips[i];
+                //TODO
+                switch (formShip)
+                {
+                    case FormShipEnum.L:
+                        break;
+                    case FormShipEnum.|:
+                        break;                    
+                    case FormShipEnum.X:
+                        break;
+                    case FormShipEnum.O:
+                        break;
+                    case FormShipEnum.P:
+                        break;
+                }
+
+            }
+
             Console.WriteLine("Choisir la première case :");
             AfficherGrilleJoueur();
             var (ax, ay) = DemanderPosition();
@@ -289,8 +309,8 @@ namespace BattleShipLibrary
             positionsBateauAdversaire = new List<(int, int)>();
 
 
-            for (int i = 0; i < Setting.HauteurTableau; i++)
-                for (int j = 0; j < Setting.LargeurTableau; j++)
+            for (int i = 0; i < settings.HauteurTableau; i++)
+                for (int j = 0; j < settings.LargeurTableau; j++)
                 {
                     grille[i, j] = VIDE;
                     grilleAdversaire[i, j] = VIDE;
@@ -299,11 +319,9 @@ namespace BattleShipLibrary
 
         public static Settings DemanderSetting()
         {
-            Settings settings = new Settings();
-            bool valide = false;
             int largeur = 0;
             int hauteur = 0;
-            int nbBateaux;
+            FormShipEnum formShip;
 
             Console.Clear();
             Console.WriteLine("Quel est la largeur du tableau : ");
@@ -323,21 +341,23 @@ namespace BattleShipLibrary
                 Console.Clear();
                 Console.WriteLine("Erreur : La hauteur doit etre comprise entre 4 et 12 !");
                 Console.WriteLine("Quel est la hauteur du tableau : ");
-            } 
+            }
+            Settings settings = new Settings(hauteur, largeur);
 
-            //valide = false;
-            //while (!valide)
-            //{
-            //    Console.Clear();
-            //    Console.WriteLine("Quel est le nombre de bateaux : ");
-            //    if (int.TryParse(Console.ReadLine(), out nbBateaux))
-            //    {
-            //        valide = true;
-            //    }
-            //}
 
-            settings.HauteurTableau = hauteur;
-            settings.LargeurTableau = largeur;
+
+            for (int i = 1; i <= settings.NumberOfShip; i++)
+            {
+                Console.Clear();
+                Console.WriteLine($"Quelle est la forme du bateau numéro {i} (L,I,O,X,P): ");
+                while (!FormShipEnum.TryParse(Console.ReadLine(), out formShip))
+                {
+                    Console.Clear();
+                    Console.WriteLine("Erreur : Le bateau doit etre d'une forme L,I,O,X ou P !");
+                    Console.WriteLine($"Quelle est la forme du bateau numéro {i} (L,I,O,X,P): ");
+                }
+                settings.AddFormShip(formShip);
+            }
             return settings;
         }
 

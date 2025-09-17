@@ -37,15 +37,15 @@ namespace BattleShipLibrary
         private void AfficherGrille(char[,] plateau, bool isOpponent)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write("   ");
+            Console.Write("    ");
             for (int j = 1; j <= Setting.LargeurTableau; j++)
-                Console.Write($"[{j}]");
+                Console.Write($"[{j,2}]");
             Console.WriteLine();
 
             for (int i = 0; i < Setting.HauteurTableau; i++)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write($"[{i + 1}]");
+                Console.Write($"[{i + 1,2}]");
                 for (int j = 0; j < Setting.LargeurTableau; j++)
                 {
                     char c = plateau[i, j];
@@ -60,9 +60,9 @@ namespace BattleShipLibrary
                     if (isOpponent && plateau[i, j] == BATEAU)
                     {
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.Write($"[{VIDE}]");
+                        Console.Write($"[ {VIDE}]");
                     }
-                    else { Console.Write($"[{c}]"); }
+                    else { Console.Write($"[ {c}]"); }
                     Console.ForegroundColor = ConsoleColor.White;
                 }
                 Console.WriteLine();

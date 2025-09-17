@@ -304,26 +304,18 @@ namespace BattleShipLibrary
             int largeur = 0;
             int hauteur = 0;
             int nbBateaux;
-            while (!valide)
+
+            do
             {
                 Console.Clear();
                 Console.WriteLine("Quel est la largeur du tableau : ");
-                if (int.TryParse(Console.ReadLine(), out largeur))
-                {
-                    valide = true;
-                }
-            }
+            } while (!int.TryParse(Console.ReadLine(), out largeur) || largeur < 4 || largeur > 12);
 
-            valide = false;
-            while (!valide)
+            do
             {
                 Console.Clear();
                 Console.WriteLine("Quel est la hauteur du tableau : ");
-                if (int.TryParse(Console.ReadLine(), out hauteur))
-                {
-                    valide = true;
-                }
-            }
+            } while (!int.TryParse(Console.ReadLine(), out hauteur) || hauteur < 4 || hauteur > 12);
 
             //valide = false;
             //while (!valide)

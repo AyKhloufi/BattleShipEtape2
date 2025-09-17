@@ -37,7 +37,7 @@ namespace BattleShipLibrary
         private void AfficherGrille(char[,] plateau, bool isOpponent)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write("    ");
+            Console.Write(" y\\x");
             for (int j = 1; j <= Setting.LargeurTableau; j++)
                 Console.Write($"[{j,2}]");
             Console.WriteLine();
@@ -101,7 +101,7 @@ namespace BattleShipLibrary
                     y = int.Parse(parts[1]) - 1;
 
 
-                    if (x < 0 || x >= Setting.HauteurTableau || y < 0 || y >= Setting.LargeurTableau)
+                    if (x < 0 || x >= Setting.LargeurTableau || y < 0 || y >= Setting.HauteurTableau)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Position hors de la grille, réessayez.");
@@ -109,7 +109,7 @@ namespace BattleShipLibrary
                     }
                     else
                     {
-                        return (x, y);
+                        return (y, x);
                     }
                 }
                 catch

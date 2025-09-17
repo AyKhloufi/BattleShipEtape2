@@ -305,17 +305,25 @@ namespace BattleShipLibrary
             int hauteur = 0;
             int nbBateaux;
 
-            do
-            {
-                Console.Clear();
-                Console.WriteLine("Quel est la largeur du tableau : ");
-            } while (!int.TryParse(Console.ReadLine(), out largeur) || largeur < 4 || largeur > 12);
+            Console.Clear();
+            Console.WriteLine("Quel est la largeur du tableau : ");
 
-            do
+            while(!int.TryParse(Console.ReadLine(), out largeur) || largeur < 4 || largeur > 12)
             {
                 Console.Clear();
+                Console.WriteLine("Erreur : La largeur doit etre comprise entre 4 et 12 !");
+                Console.WriteLine("Quel est la largeur du tableau : ");
+            }
+
+            Console.Clear();
+            Console.WriteLine("Quel est la hauteur du tableau : ");
+
+            while (!int.TryParse(Console.ReadLine(), out hauteur) || hauteur < 4 || hauteur > 12)
+            {
+                Console.Clear();
+                Console.WriteLine("Erreur : La hauteur doit etre comprise entre 4 et 12 !");
                 Console.WriteLine("Quel est la hauteur du tableau : ");
-            } while (!int.TryParse(Console.ReadLine(), out hauteur) || hauteur < 4 || hauteur > 12);
+            } 
 
             //valide = false;
             //while (!valide)

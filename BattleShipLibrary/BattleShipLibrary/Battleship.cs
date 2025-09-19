@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 namespace BattleShipLibrary
 {
@@ -509,6 +510,7 @@ namespace BattleShipLibrary
                     grille[i, j] = VIDE;
                     grilleAdversaire[i, j] = VIDE;
                 }
+            settings.InitFormsShipEnums();
         }
 
         public static Settings DemanderSetting()
@@ -543,12 +545,12 @@ namespace BattleShipLibrary
             for (int i = 1; i <= settings.NumberOfShip; i++)
             {
                 Console.Clear();
-                Console.WriteLine($"Quelle est la forme du bateau numéro {i} (L,I,O,X,T): ");
-                while (!FormShipEnum.TryParse(Console.ReadLine(), out formShip))
+                Console.WriteLine($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
+                while (!FormShipEnum.TryParse(Console.ReadLine(), out formShip) || !settings.FormShipEnums.Contains(formShip))
                 {
                     Console.Clear();
-                    Console.WriteLine("Erreur : Le bateau doit etre d'une forme L,I,O,X ou T !");
-                    Console.WriteLine($"Quelle est la forme du bateau numéro {i} (L,I,O,X,T): ");
+                    Console.WriteLine($"Erreur : Le bateau doit etre d'une forme {string.Join(", ", settings.FormShipEnums)} !");
+                    Console.WriteLine($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
                 }
                 settings.AddFormShip(formShip);
             }

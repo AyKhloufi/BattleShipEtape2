@@ -240,6 +240,9 @@ namespace Serveur_Battleship.models
             if (valide)
             {
                 touche = battleship.AttaquerPosition(coordsAttack.Item1, coordsAttack.Item2);
+                Console.Clear();
+                battleship.AfficherGrilleAdversaire();
+                battleship.AfficherGrilleJoueur();
                 m = new Message('V', JsonConvert.SerializeObject(true));
             }
             byte[] msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-namespace BattleShipLibrary
+﻿namespace BattleShipLibrary
 {
     public class Battleship
     {
@@ -11,7 +7,7 @@ namespace BattleShipLibrary
 
         private List<(int, int)> positionsBateau;
         private List<(int, int)> positionsBateauAdversaire;
-        private const char TOUCHER = '#', MANQUER = '*', BATEAU = '■', VIDE = '~';
+        private const char TOUCHER = '#', MANQUER = '*', BATEAU = '@', VIDE = '~';
         public Settings settings { get; set; }
 
         public Battleship(Settings settings)
@@ -37,6 +33,7 @@ namespace BattleShipLibrary
 
         private void AfficherGrille(char[,] plateau, bool isOpponent)
         {
+            Console.WriteLine("Bateau : @\t| Toucher : #\t | Manquer : *\t | Vide : ~");
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write(" y\\x");
             for (int j = 1; j <= settings.LargeurTableau; j++)
@@ -49,21 +46,17 @@ namespace BattleShipLibrary
                 Console.Write($"[{i + 1,2}]");
                 for (int j = 0; j < settings.LargeurTableau; j++)
                 {
-                    char c = plateau[i, j];
-                    switch (c)
-                    {
-                        case VIDE: Console.ForegroundColor = ConsoleColor.Blue; break;
-                        case BATEAU: Console.ForegroundColor = ConsoleColor.Green; break;
-                        case TOUCHER: Console.ForegroundColor = ConsoleColor.DarkRed; break;
-                        case MANQUER: Console.ForegroundColor = ConsoleColor.Red; break;
-                        default: Console.ForegroundColor = ConsoleColor.White; break;
-                    }
                     if (isOpponent && plateau[i, j] == BATEAU)
                     {
-                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.ForegroundColor = settings.ColorsOfConsole[VIDE];
                         Console.Write($"[ {VIDE}]");
                     }
-                    else { Console.Write($"[ {c}]"); }
+                    else
+                    {
+                        char c = plateau[i, j];
+                        Console.ForegroundColor = settings.ColorsOfConsole[c];
+                        Console.Write($"[ {c}]");
+                    }
                     Console.ForegroundColor = ConsoleColor.White;
                 }
                 Console.WriteLine();
@@ -161,7 +154,6 @@ namespace BattleShipLibrary
 
                 Console.Clear();
                 Console.WriteLine($"Bateau {formShip} placé");
-                AfficherGrilleJoueur();
             }
 
             return toutesLesPositions;
@@ -265,13 +257,13 @@ namespace BattleShipLibrary
                 var (x, y) = DemanderPosition();
 
                 List<(int, int)> positions = new List<(int, int)>
-        {
-            (x, y),         // Centre
-            (x - 1, y),     // Gauche
-            (x + 1, y),     // Droite
-            (x, y - 1),     // Haut
-            (x, y + 1)      // Bas
-        };
+                    {
+                        (x, y),         // Centre
+                        (x - 1, y),     // Gauche
+                        (x + 1, y),     // Droite
+                        (x, y - 1),     // Haut
+                        (x, y + 1)      // Bas
+                    };
 
                 if (PositionsValides(positions))
                 {
@@ -403,7 +395,7 @@ namespace BattleShipLibrary
 
                 } while (grilleAdversaire[coords.Item1, coords.Item2] != VIDE && grilleAdversaire[coords.Item1, coords.Item2] != BATEAU);
             }
-            
+
             return coords;
         }
 
@@ -414,17 +406,11 @@ namespace BattleShipLibrary
                 if (grille[x, y] == BATEAU)
                 {
                     grille[x, y] = TOUCHER;
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"Touché!");
-                    Console.ResetColor();
                     return true;
                 }
                 else if (grille[x, y] == VIDE)
                 {
                     grille[x, y] = MANQUER;
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"Manqué");
-                    Console.ResetColor();
                     return false;
                 }
                 else
@@ -447,17 +433,11 @@ namespace BattleShipLibrary
                 if (grilleAdversaire[x, y] == BATEAU)
                 {
                     grilleAdversaire[x, y] = TOUCHER;
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"Touché!");
-                    Console.ResetColor();
                     return true;
                 }
                 else if (grilleAdversaire[x, y] == VIDE)
                 {
                     grilleAdversaire[x, y] = MANQUER;
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"Manqué");
-                    Console.ResetColor();
                     return false;
                 }
                 else
@@ -511,6 +491,7 @@ namespace BattleShipLibrary
                     grilleAdversaire[i, j] = VIDE;
                 }
             settings.InitFormsShipEnums();
+            settings.InitConsoleColors();
         }
 
         public static Settings DemanderSetting()
@@ -520,13 +501,13 @@ namespace BattleShipLibrary
             FormShipEnum formShip;
 
             Console.Clear();
-            Console.WriteLine("Quel est la largeur du tableau : ");
+            Console.Write("Quel est la largeur du tableau : ");
 
-            while(!int.TryParse(Console.ReadLine(), out largeur) || largeur < 4 || largeur > 12)
+            while (!int.TryParse(Console.ReadLine(), out largeur) || largeur < 4 || largeur > 12)
             {
                 Console.Clear();
                 Console.WriteLine("Erreur : La largeur doit etre comprise entre 4 et 12 !");
-                Console.WriteLine("Quel est la largeur du tableau : ");
+                Console.Write("Quel est la largeur du tableau : ");
             }
 
             Console.Clear();
@@ -536,21 +517,61 @@ namespace BattleShipLibrary
             {
                 Console.Clear();
                 Console.WriteLine("Erreur : La hauteur doit etre comprise entre 4 et 12 !");
-                Console.WriteLine("Quel est la hauteur du tableau : ");
+                Console.Write("Quel est la hauteur du tableau : ");
             }
             Settings settings = new Settings(hauteur, largeur);
 
+            ConsoleColor consoleColor;
 
+            Console.Clear();
+            Console.Write($"Quelle est la couleur du bateau ({string.Join(", ", settings.ConsoleColors)}) : ");
+            while (!ConsoleColor.TryParse(Console.ReadLine(), out consoleColor) || !settings.ConsoleColors.Contains(consoleColor))
+            {
+                Console.Clear();
+                Console.WriteLine($"Erreur : La couleur doit etre parmi le {string.Join(", ", settings.ConsoleColors)} !");
+                Console.Write($"Quelle est la couleur du bateau ({string.Join(", ", settings.ConsoleColors)}) : ");
+            }
+            settings.AddColorOfConsole(BATEAU, consoleColor);
+
+            Console.Clear();
+            Console.Write($"Quelle est la couleur lorqu'on touche un bateau ({string.Join(", ", settings.ConsoleColors)}) : ");
+            while (!ConsoleColor.TryParse(Console.ReadLine(), out consoleColor) || !settings.ConsoleColors.Contains(consoleColor))
+            {
+                Console.Clear();
+                Console.WriteLine($"Erreur : La couleur doit etre parmi le {string.Join(", ", settings.ConsoleColors)} !");
+                Console.Write($"Quelle est la couleur lorqu'on touche un bateau({string.Join(", ", settings.ConsoleColors)}) : ");
+            }
+            settings.AddColorOfConsole(TOUCHER, consoleColor);
+
+            Console.Clear();
+            Console.Write($"Quelle est la couleur lorqu'on ne touche pas un bateau ({string.Join(", ", settings.ConsoleColors)}) : ");
+            while (!ConsoleColor.TryParse(Console.ReadLine(), out consoleColor) || !settings.ConsoleColors.Contains(consoleColor))
+            {
+                Console.Clear();
+                Console.WriteLine($"Erreur : La couleur doit etre parmi le {string.Join(", ", settings.ConsoleColors)} !");
+                Console.Write($"Quelle est la couleur lorqu'on ne touche pas un bateau ({string.Join(", ", settings.ConsoleColors)}) : ");
+            }
+            settings.AddColorOfConsole(MANQUER, consoleColor);
+
+            Console.Clear();
+            Console.Write($"Quelle est la couleur lorqu'on n'a pas encore attaqué une case ({string.Join(", ", settings.ConsoleColors)}) : ");
+            while (!ConsoleColor.TryParse(Console.ReadLine(), out consoleColor) || !settings.ConsoleColors.Contains(consoleColor))
+            {
+                Console.Clear();
+                Console.WriteLine($"Erreur : La couleur doit etre parmi le {string.Join(", ", settings.ConsoleColors)} !");
+                Console.Write($"Quelle est la couleur lorqu'on n'a pas encore attaqué une case ({string.Join(", ", settings.ConsoleColors)}) : ");
+            }
+            settings.AddColorOfConsole(VIDE, consoleColor);
 
             for (int i = 1; i <= settings.NumberOfShip; i++)
             {
                 Console.Clear();
-                Console.WriteLine($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
+                Console.Write($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
                 while (!FormShipEnum.TryParse(Console.ReadLine(), out formShip) || !settings.FormShipEnums.Contains(formShip))
                 {
                     Console.Clear();
                     Console.WriteLine($"Erreur : Le bateau doit etre d'une forme {string.Join(", ", settings.FormShipEnums)} !");
-                    Console.WriteLine($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
+                    Console.Write($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
                 }
                 settings.AddFormShip(formShip);
             }
@@ -586,10 +607,10 @@ namespace BattleShipLibrary
 
 
 
-       public static string EncodeAttaque((int, int) positions)
-       {
+        public static string EncodeAttaque((int, int) positions)
+        {
             return $"{positions.Item1}.{positions.Item2}";
-       }
+        }
 
         public static (int, int) DecodeAttaque(string data)
         {

@@ -12,7 +12,7 @@ namespace BattleShipLibrary
         I,
         O, // carré
         X,
-        P
+        T
     }
     public class Settings
     {

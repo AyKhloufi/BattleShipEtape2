@@ -222,7 +222,7 @@ namespace Serveur_Battleship.models
             //Si oui out of bounds
             Message m = new Message('V', JsonConvert.SerializeObject(true)); ;
             if (coordsAttack.Item1 < 0 || coordsAttack.Item2 < 0 ||
-                coordsAttack.Item1 > battleship.Setting.LargeurTableau || coordsAttack.Item2 > battleship.Setting.HauteurTableau)
+                coordsAttack.Item1 > battleship.settings.LargeurTableau || coordsAttack.Item2 > battleship.settings.HauteurTableau)
             {
                 m = new Message('V', JsonConvert.SerializeObject(false));
             }

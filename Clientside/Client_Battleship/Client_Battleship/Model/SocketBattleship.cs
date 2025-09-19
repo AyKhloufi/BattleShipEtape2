@@ -180,7 +180,7 @@ namespace Client_Battleship.Model
             (int, int) coords = JsonConvert.DeserializeObject<(int, int)>(message.LeMessage);
             //Si oui out of bounds
             if(coords.Item1 < 0 || coords.Item2 < 0 ||
-                coords.Item1 > battleship.Setting.LargeurTableau || coords.Item2 > battleship.Setting.HauteurTableau)
+                coords.Item1 > battleship.settings.LargeurTableau || coords.Item2 > battleship.settings.HauteurTableau)
             {
                 return new Message('V', JsonConvert.SerializeObject(false));
             }
@@ -194,7 +194,7 @@ namespace Client_Battleship.Model
         {
             Settings setting = Battleship.DemanderSetting();
             battleship = new Battleship(setting);
-            return new Message('S', JsonConvert.SerializeObject(battleship.Setting));
+            return new Message('S', JsonConvert.SerializeObject(battleship.settings));
         }
     }
 }

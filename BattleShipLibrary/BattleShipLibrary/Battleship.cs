@@ -121,69 +121,263 @@ namespace BattleShipLibrary
                 }
             }
         }
-       
-    
+
+
         public List<(int, int)> PlacerBateau()
         {
-            for (int i = 0; i< settings.NumberOfShip; i++)
+            List<(int, int)> toutesLesPositions = new List<(int, int)>();
+
+            for (int i = 0; i < settings.NumberOfShip; i++)
             {
                 FormShipEnum formShip = settings.FormShips[i];
-                //TODO
+
                 switch (formShip)
                 {
                     case FormShipEnum.L:
+                        positionsBateau.AddRange(PlacerBateauL());
                         break;
-                    case FormShipEnum.|:
-                        break;                    
+                    case FormShipEnum.I:
+                        positionsBateau.AddRange(PlacerBateauI());
+                        break;
                     case FormShipEnum.X:
+                        positionsBateau.AddRange(PlacerBateauX());
                         break;
                     case FormShipEnum.O:
+                        positionsBateau.AddRange(PlacerBateauO());
                         break;
-                    case FormShipEnum.P:
+                    case FormShipEnum.T:
+                        positionsBateau.AddRange(PlacerBateauP());
                         break;
                 }
 
+                // Ajouter les positions à la grille
+                foreach (var pos in positionsBateau)
+                {
+                    grille[pos.Item1, pos.Item2] = BATEAU;
+                }
+
+                toutesLesPositions.AddRange(positionsBateau);
+
+                Console.Clear();
+                Console.WriteLine($"Bateau {formShip} placé");
+                AfficherGrilleJoueur();
             }
 
-            Console.WriteLine("Choisir la première case :");
-            AfficherGrilleJoueur();
-            var (ax, ay) = DemanderPosition();
+            return toutesLesPositions;
+        }
 
-            int bx = -1, by = -1;
+        private List<(int, int)> PlacerBateauL()
+        {
+            Console.WriteLine("Placement du bateau en forme de L (3 cases)");
+            AfficherGrilleJoueur();
+
             while (true)
             {
-                Console.WriteLine("Choisir la deuxième case:");
-                var pos = DemanderPosition();
-                bx = pos.Item1;
-                by = pos.Item2;
+                Console.WriteLine("Choisir la position du coin du L:");
+                var (x, y) = DemanderPosition();
 
+                Console.WriteLine("Choisir l'orientation du L:");
+                Console.WriteLine("1. L normal (coin en haut-gauche)");
+                Console.WriteLine("2. L tourné 90° (coin en bas-gauche)");
+                Console.WriteLine("3. L tourné 180° (coin en bas-droite)");
+                Console.WriteLine("4. L tourné 270° (coin en haut-droite)");
 
-                bool estAdjacent =
-                (Math.Abs(ax - bx) == 1 && ay == by) ||
-                (Math.Abs(ay - by) == 1 && ax == bx);
-
-                if (estAdjacent)
+                if (int.TryParse(Console.ReadLine(), out int orientation) && orientation >= 1 && orientation <= 4)
                 {
-                    break;
+                    List<(int, int)> positions = new List<(int, int)>();
+
+                    switch (orientation)
+                    {
+                        case 1: // L normal
+                            positions = new List<(int, int)> { (x, y), (x + 1, y), (x, y + 1) };
+                            break;
+                        case 2: // L tourné 90°
+                            positions = new List<(int, int)> { (x, y), (x - 1, y), (x, y + 1) };
+                            break;
+                        case 3: // L tourné 180°
+                            positions = new List<(int, int)> { (x, y), (x - 1, y), (x, y - 1) };
+                            break;
+                        case 4: // L tourné 270°
+                            positions = new List<(int, int)> { (x, y), (x + 1, y), (x, y - 1) };
+                            break;
+                    }
+
+                    if (PositionsValides(positions))
+                    {
+                        return positions;
+                    }
                 }
-                else
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Position ou orientation invalide. Réessayez.");
+                Console.ResetColor();
+            }
+        }
+
+        private List<(int, int)> PlacerBateauI()
+        {
+            Console.WriteLine("Placement du bateau en forme de I (ligne droite de 4 cases)");
+            AfficherGrilleJoueur();
+
+            while (true)
+            {
+                Console.WriteLine("Choisir la première extrémité du bateau:");
+                var (x, y) = DemanderPosition();
+
+                Console.WriteLine("Choisir l'orientation:");
+                Console.WriteLine("1. Horizontal (vers la droite)");
+                Console.WriteLine("2. Vertical (vers le bas)");
+
+                if (int.TryParse(Console.ReadLine(), out int orientation) && (orientation == 1 || orientation == 2))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("La deuxième case doit être voisine horizontalement ou verticalement de la première.");
-                    Console.ResetColor();
+                    List<(int, int)> positions = new List<(int, int)>();
+
+                    if (orientation == 1) // Horizontal
+                    {
+                        positions = new List<(int, int)> { (x, y), (x, y + 1), (x, y + 2), (x, y + 3) };
+                    }
+                    else // Vertical
+                    {
+                        positions = new List<(int, int)> { (x, y), (x + 1, y), (x + 2, y), (x + 3, y) };
+                    }
+
+                    if (PositionsValides(positions))
+                    {
+                        return positions;
+                    }
+                }
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Position ou orientation invalide. Réessayez.");
+                Console.ResetColor();
+            }
+        }
+
+        private List<(int, int)> PlacerBateauX()
+        {
+            Console.WriteLine("Placement du bateau en forme de X (5 cases en croix)");
+            AfficherGrilleJoueur();
+
+            while (true)
+            {
+                Console.WriteLine("Choisir la position du centre du X:");
+                var (x, y) = DemanderPosition();
+
+                List<(int, int)> positions = new List<(int, int)>
+        {
+            (x, y),         // Centre
+            (x - 1, y),     // Gauche
+            (x + 1, y),     // Droite
+            (x, y - 1),     // Haut
+            (x, y + 1)      // Bas
+        };
+
+                if (PositionsValides(positions))
+                {
+                    return positions;
+                }
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Position invalide. Le X doit tenir entièrement dans la grille. Réessayez.");
+                Console.ResetColor();
+            }
+        }
+
+        private List<(int, int)> PlacerBateauO()
+        {
+            Console.WriteLine("Placement du bateau en forme de O (carré de 4 cases)");
+            AfficherGrilleJoueur();
+
+            while (true)
+            {
+                Console.WriteLine("Choisir la position du coin supérieur gauche du carré:");
+                var (x, y) = DemanderPosition();
+
+                List<(int, int)> positions = new List<(int, int)>
+                {
+                    (x, y),         // Coin supérieur gauche
+                    (x + 1, y),     // Coin supérieur droit
+                    (x, y + 1),     // Coin inférieur gauche
+                    (x + 1, y + 1)  // Coin inférieur droit
+                };
+
+                if (PositionsValides(positions))
+                {
+                    return positions;
+                }
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Position invalide. Le carré doit tenir entièrement dans la grille. Réessayez.");
+                Console.ResetColor();
+            }
+        }
+
+        private List<(int, int)> PlacerBateauP()
+        {
+            Console.WriteLine("Placement du bateau en forme de T (4 cases)");
+            AfficherGrilleJoueur();
+
+            while (true)
+            {
+                Console.WriteLine("Choisir la position du coin inférieur gauche du T:");
+                var (x, y) = DemanderPosition();
+
+                Console.WriteLine("Choisir l'orientation du T:");
+                Console.WriteLine("1. T normal (ouverture vers la haut)");
+                Console.WriteLine("2. T tourné 90° (ouverture vers le gauche)");
+                Console.WriteLine("3. T tourné 180° (ouverture vers la bas)");
+                Console.WriteLine("4. T tourné 270° (ouverture vers le droite)");
+
+                if (int.TryParse(Console.ReadLine(), out int orientation) && orientation >= 1 && orientation <= 4)
+                {
+                    List<(int, int)> positions = new List<(int, int)>();
+
+                    switch (orientation)
+                    {
+                        case 1: // P normal
+                            positions = new List<(int, int)> { (x, y), (x, y - 1), (x, y - 2), (x + 1, y - 1) };
+                            break;
+                        case 2: // P tourné 90°
+                            positions = new List<(int, int)> { (x, y), (x + 1, y), (x + 2, y), (x + 1, y + 1) };
+                            break;
+                        case 3: // P tourné 180°
+                            positions = new List<(int, int)> { (x, y), (x, y + 1), (x, y + 2), (x - 1, y + 1) };
+                            break;
+                        case 4: // P tourné 270°
+                            positions = new List<(int, int)> { (x, y), (x - 1, y), (x - 2, y), (x - 1, y - 1) };
+                            break;
+                    }
+
+                    if (PositionsValides(positions))
+                    {
+                        return positions;
+                    }
+                }
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Position ou orientation invalide. Réessayez.");
+                Console.ResetColor();
+            }
+        }
+
+        private bool PositionsValides(List<(int, int)> positions)
+        {
+            foreach (var (x, y) in positions)
+            {
+                // Vérifier que la position est dans la grille
+                if (x < 0 || x >= grille.GetLength(0) || y < 0 || y >= grille.GetLength(1))
+                {
+                    return false;
+                }
+
+                // Vérifier que la case n'est pas déjà occupée
+                if (grille[x, y] == BATEAU)
+                {
+                    return false;
                 }
             }
 
-            grille[ax, ay] = BATEAU;
-            grille[bx, by] = BATEAU;
-            positionsBateau = new List<(int, int)> { (ax, ay), (bx, by) };
-
-            Console.Clear();
-            Console.WriteLine("Bateau placé");
-            AfficherGrilleJoueur();
-
-
-            return new List<(int, int)> { (ax, ay), (bx, by) };
+            return true;
         }
 
         public void PositionsBateauAdversaireEnBoard(List<(int, int)> positions)
@@ -349,12 +543,12 @@ namespace BattleShipLibrary
             for (int i = 1; i <= settings.NumberOfShip; i++)
             {
                 Console.Clear();
-                Console.WriteLine($"Quelle est la forme du bateau numéro {i} (L,I,O,X,P): ");
+                Console.WriteLine($"Quelle est la forme du bateau numéro {i} (L,I,O,X,T): ");
                 while (!FormShipEnum.TryParse(Console.ReadLine(), out formShip))
                 {
                     Console.Clear();
-                    Console.WriteLine("Erreur : Le bateau doit etre d'une forme L,I,O,X ou P !");
-                    Console.WriteLine($"Quelle est la forme du bateau numéro {i} (L,I,O,X,P): ");
+                    Console.WriteLine("Erreur : Le bateau doit etre d'une forme L,I,O,X ou T !");
+                    Console.WriteLine($"Quelle est la forme du bateau numéro {i} (L,I,O,X,T): ");
                 }
                 settings.AddFormShip(formShip);
             }

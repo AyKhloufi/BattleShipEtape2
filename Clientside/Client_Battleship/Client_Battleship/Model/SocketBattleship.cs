@@ -129,12 +129,22 @@ namespace Client_Battleship.Model
 
         private static Message OKMessage()
         {
-            battleship.AttaquerPositionAdverse(lastAttack.Item1, lastAttack.Item2);
+            bool touche = battleship.AttaquerPositionAdverse(lastAttack.Item1, lastAttack.Item2);
 
-            Console.Clear();
-            battleship.AfficherGrilleAdversaire();
-            battleship.AfficherGrilleJoueur();
-            return new Message('O', string.Empty);
+            if (touche)
+            {
+                Console.Clear();
+                battleship.AfficherGrilleAdversaire();
+                battleship.AfficherGrilleJoueur();
+                return AttackMessage();
+            }else
+            {
+                Console.Clear();
+                battleship.AfficherGrilleAdversaire();
+                battleship.AfficherGrilleJoueur();
+                return new Message('O', string.Empty);
+            }
+            
         }
 
         private static Message ReplayMessage()

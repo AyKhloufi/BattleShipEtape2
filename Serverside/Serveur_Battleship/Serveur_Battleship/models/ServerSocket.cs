@@ -1,5 +1,6 @@
 ﻿using BattleShipLibrary;
 using Client_Battleship.Model;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Sockets;
@@ -217,25 +218,31 @@ namespace Serveur_Battleship.models
             return data.Substring(0, data.IndexOf('|'));
         }
 
-        public static byte[] CoupEstValide((int, int) coordsAttack)
+        public static bool CoupEstValide((int, int) coordsAttack)
         {
             //Si oui out of bounds
-            Message m = new Message('V', JsonConvert.SerializeObject(true)); ;
             if (coordsAttack.Item1 < 0 || coordsAttack.Item2 < 0 ||
                 coordsAttack.Item1 > battleship.settings.LargeurTableau || coordsAttack.Item2 > battleship.settings.HauteurTableau)
             {
-                m = new Message('V', JsonConvert.SerializeObject(false));
+                return false;
             }
-
-            battleship.AttaquerPosition(coordsAttack.Item1, coordsAttack.Item2);
-            m = new Message('V', JsonConvert.SerializeObject(true));
-            return Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
+            return true;
+            
         }
 
         public static void AttaquerAdverse(string leMessage)
         {
             (int, int) coordsAttack = JsonConvert.DeserializeObject<(int, int)>(leMessage);
-            byte[] msg = CoupEstValide(coordsAttack);
+            bool valide = CoupEstValide(coordsAttack);
+
+            Message m = new Message('V', JsonConvert.SerializeObject(false));
+            bool touche= false;
+            if (valide)
+            {
+                touche = battleship.AttaquerPosition(coordsAttack.Item1, coordsAttack.Item2);
+                m = new Message('V', JsonConvert.SerializeObject(true));
+            }
+            byte[] msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
             handler.Send(msg);
 
             byte[] bytes = new byte[32];
@@ -246,7 +253,7 @@ namespace Serveur_Battleship.models
                 data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
             }
             data = data.Substring(0, data.IndexOf('|'));
-            Message m = JsonConvert.DeserializeObject<Message>(data);
+            m = JsonConvert.DeserializeObject<Message>(data);
 
 
             if (battleship.EstCoule())
@@ -297,17 +304,21 @@ namespace Serveur_Battleship.models
 
                 }
             }
+            else if (touche)
+            {
+                Console.Clear();
+                battleship.AfficherGrilleAdversaire();
+                battleship.AfficherGrilleJoueur();
+                AttaquerAdverse(m.LeMessage);
+
+            }
             else
             {
                 Console.Clear();
                 battleship.AfficherGrilleAdversaire();
                 battleship.AfficherGrilleJoueur();
                 Attaquer();
-
-
             }
-
-
         }
 
         public static void Attaquer()
@@ -333,13 +344,24 @@ namespace Serveur_Battleship.models
                 if (JsonConvert.DeserializeObject<bool>(m.LeMessage))
                 {
 
-                    battleship.AttaquerPositionAdverse(coordsAttack.Item1, coordsAttack.Item2);
-                    Console.Clear();
-                    battleship.AfficherGrilleAdversaire();
-                    battleship.AfficherGrilleJoueur();
-                    m = new Message('O', string.Empty);
-                    msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
-                    handler.Send(msg);
+                    bool touche = battleship.AttaquerPositionAdverse(coordsAttack.Item1, coordsAttack.Item2);
+                    if (touche)
+                    {
+                        Console.Clear();
+                        battleship.AfficherGrilleAdversaire();
+                        battleship.AfficherGrilleJoueur();
+                        Attaquer();
+                    }
+                    else
+                    {
+                        Console.Clear();
+                        battleship.AfficherGrilleAdversaire();
+                        battleship.AfficherGrilleJoueur();
+                        m = new Message('O', string.Empty);
+                        msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
+                        handler.Send(msg);
+                    }
+                    
                 }
                 else
                 {

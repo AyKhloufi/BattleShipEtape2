@@ -1,4 +1,6 @@
-﻿namespace BattleShipLibrary
+﻿using Newtonsoft.Json;
+
+namespace BattleShipLibrary
 {
     public enum FormShipEnum
     {
@@ -17,6 +19,7 @@
         public List<FormShipEnum> FormShipEnums { get; set; }
         public Dictionary<char, ConsoleColor> ColorsOfConsole { get; set; }
         public List<ConsoleColor> ConsoleColors { get; set; }
+        private static readonly string ConfigPath = "battleship_config.json";
 
         public Settings() { }
 
@@ -29,6 +32,9 @@
             LargeurTableau = largeurTableau;
             NumberOfShip = 3;
             ColorsOfConsole = new Dictionary<char, ConsoleColor>();
+            // Si un fichier de configuration est ajouté, il faudra initialiser ColorsOfConsole avec les valeurs du fichier
+
+
             ConsoleColors = new List<ConsoleColor>();
             InitConsoleColors();
         }
@@ -68,6 +74,38 @@
             ColorsOfConsole.Add(key, value);
             ConsoleColors.Remove(value);
         }
+
+        public static void SaveSettings(Dictionary<char, ConsoleColor> colors)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(colors, Formatting.Indented);
+                File.WriteAllText(ConfigPath, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur de sauvegarde : {ex.Message}");
+            }
+        }
+
+        public static Dictionary<char, ConsoleColor> LoadSettings()
+        {
+            try
+            {
+                if (File.Exists(ConfigPath))
+                {
+                    string json = File.ReadAllText(ConfigPath);
+                    return JsonConvert.DeserializeObject<Dictionary<char, ConsoleColor>>(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur de chargement : {ex.Message}");
+            }
+            return null;
+        }
+
+        public static bool Exists() => File.Exists(ConfigPath);
 
     }
 }

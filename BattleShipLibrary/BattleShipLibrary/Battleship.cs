@@ -33,6 +33,7 @@
 
         private void AfficherGrille(char[,] plateau, bool isOpponent)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Bateau : @\t| Toucher : #\t | Manquer : *\t | Vide : ~");
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write(" y\\x");
@@ -140,7 +141,7 @@
                         positionsBateau.AddRange(PlacerBateauO());
                         break;
                     case FormShipEnum.T:
-                        positionsBateau.AddRange(PlacerBateauP());
+                        positionsBateau.AddRange(PlacerBateauT());
                         break;
                 }
 
@@ -156,6 +157,7 @@
                 Console.WriteLine($"Bateau {formShip} placé");
             }
 
+            Console.WriteLine("L'adversaire n'a pas finit de placer ses bateaux ...");
             return toutesLesPositions;
         }
 
@@ -305,7 +307,7 @@
             }
         }
 
-        private List<(int, int)> PlacerBateauP()
+        private List<(int, int)> PlacerBateauT()
         {
             Console.WriteLine("Placement du bateau en forme de T (4 cases)");
             AfficherGrilleJoueur();
@@ -511,7 +513,7 @@
             }
 
             Console.Clear();
-            Console.WriteLine("Quel est la hauteur du tableau : ");
+            Console.Write("Quel est la hauteur du tableau : ");
 
             while (!int.TryParse(Console.ReadLine(), out hauteur) || hauteur < 4 || hauteur > 12)
             {
@@ -521,6 +523,37 @@
             }
             Settings settings = new Settings(hauteur, largeur);
 
+            if (Settings.Exists())
+            {
+                settings.ColorsOfConsole = Settings.LoadSettings();
+                Console.WriteLine("Configuration des couleurs chargée !");
+                Console.WriteLine("Appuyez sur une touche pour continuer...");
+                Console.ReadKey();
+            }
+            else
+            {
+                DemanderCouleur(settings);
+                Settings.SaveSettings(settings.ColorsOfConsole);
+            }
+
+            for (int i = 1; i <= settings.NumberOfShip; i++)
+            {
+                Console.Clear();
+                Console.Write($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
+                while (!FormShipEnum.TryParse(Console.ReadLine(), out formShip) || !settings.FormShipEnums.Contains(formShip))
+                {
+                    Console.Clear();
+                    Console.WriteLine($"Erreur : Le bateau doit etre d'une forme {string.Join(", ", settings.FormShipEnums)} !");
+                    Console.Write($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
+                }
+                settings.AddFormShip(formShip);
+            }
+            return settings;
+        }
+
+
+        public static void DemanderCouleur(Settings settings)
+        {
             ConsoleColor consoleColor;
 
             Console.Clear();
@@ -562,66 +595,51 @@
                 Console.Write($"Quelle est la couleur lorqu'on n'a pas encore attaqué une case ({string.Join(", ", settings.ConsoleColors)}) : ");
             }
             settings.AddColorOfConsole(VIDE, consoleColor);
+        }
 
-            for (int i = 1; i <= settings.NumberOfShip; i++)
+
+        public static class BattleshipSerializer
+        {
+            public static string EncodePositions(List<(int, int)> positions)
             {
-                Console.Clear();
-                Console.Write($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
-                while (!FormShipEnum.TryParse(Console.ReadLine(), out formShip) || !settings.FormShipEnums.Contains(formShip))
-                {
-                    Console.Clear();
-                    Console.WriteLine($"Erreur : Le bateau doit etre d'une forme {string.Join(", ", settings.FormShipEnums)} !");
-                    Console.Write($"Quelle est la forme du bateau numéro {i} ({string.Join(", ", settings.FormShipEnums)}): ");
-                }
-                settings.AddFormShip(formShip);
+                return string.Join(";", positions.Select(p => $"{p.Item1}.{p.Item2}"));
             }
-            return settings;
-        }
 
-    }
-
-
-    public static class BattleshipSerializer
-    {
-        public static string EncodePositions(List<(int, int)> positions)
-        {
-            return string.Join(";", positions.Select(p => $"{p.Item1}.{p.Item2}"));
-        }
-
-        public static List<(int, int)> DecodePositions(string data)
-        {
-            var positions = new List<(int, int)>();
-            var parts = data.Split(';');
-            foreach (var part in parts)
+            public static List<(int, int)> DecodePositions(string data)
             {
-                var coords = part.Split('.');
+                var positions = new List<(int, int)>();
+                var parts = data.Split(';');
+                foreach (var part in parts)
+                {
+                    var coords = part.Split('.');
+                    if (coords.Length == 2 &&
+                        int.TryParse(coords[0], out int x) &&
+                        int.TryParse(coords[1], out int y))
+                    {
+                        positions.Add((x, y));
+                    }
+                }
+                return positions;
+            }
+
+
+
+            public static string EncodeAttaque((int, int) positions)
+            {
+                return $"{positions.Item1}.{positions.Item2}";
+            }
+
+            public static (int, int) DecodeAttaque(string data)
+            {
+                var coords = data.Split('.');
                 if (coords.Length == 2 &&
                     int.TryParse(coords[0], out int x) &&
                     int.TryParse(coords[1], out int y))
                 {
-                    positions.Add((x, y));
+                    return (x, y);
                 }
+                throw new FormatException("Format d'attaque invalide");
             }
-            return positions;
-        }
-
-
-
-        public static string EncodeAttaque((int, int) positions)
-        {
-            return $"{positions.Item1}.{positions.Item2}";
-        }
-
-        public static (int, int) DecodeAttaque(string data)
-        {
-            var coords = data.Split('.');
-            if (coords.Length == 2 &&
-                int.TryParse(coords[0], out int x) &&
-                int.TryParse(coords[1], out int y))
-            {
-                return (x, y);
-            }
-            throw new FormatException("Format d'attaque invalide");
         }
     }
 }

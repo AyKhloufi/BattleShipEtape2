@@ -119,14 +119,6 @@ namespace BattleShipLibrary
             }
         }
 
-        private (int, int) DemanderPositionRobot()
-        {
-            Random rnd = new Random();
-            int x = rnd.Next(0, settings.LargeurTableau);
-            int y = rnd.Next(0, settings.HauteurTableau);
-            return (y, x);
-        }
-
 
         public List<(int, int)> PlacerBateau(bool isRobot)
         {

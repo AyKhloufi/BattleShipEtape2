@@ -1,4 +1,6 @@
-﻿namespace BattleShipLibrary
+﻿using System.Numerics;
+
+namespace BattleShipLibrary
 {
     public class Battleship
     {
@@ -117,8 +119,16 @@
             }
         }
 
+        private (int, int) DemanderPositionRobot()
+        {
+            Random rnd = new Random();
+            int x = rnd.Next(0, settings.LargeurTableau);
+            int y = rnd.Next(0, settings.HauteurTableau);
+            return (y, x);
+        }
 
-        public List<(int, int)> PlacerBateau()
+
+        public List<(int, int)> PlacerBateau(bool isRobot)
         {
             List<(int, int)> toutesLesPositions = new List<(int, int)>();
 
@@ -129,19 +139,19 @@
                 switch (formShip)
                 {
                     case FormShipEnum.L:
-                        positionsBateau.AddRange(PlacerBateauL());
+                        positionsBateau.AddRange(PlacerBateauL(isRobot));
                         break;
                     case FormShipEnum.I:
-                        positionsBateau.AddRange(PlacerBateauI());
+                        positionsBateau.AddRange(PlacerBateauI(isRobot));
                         break;
                     case FormShipEnum.X:
-                        positionsBateau.AddRange(PlacerBateauX());
+                        positionsBateau.AddRange(PlacerBateauX(isRobot));
                         break;
                     case FormShipEnum.O:
-                        positionsBateau.AddRange(PlacerBateauO());
+                        positionsBateau.AddRange(PlacerBateauO(isRobot));
                         break;
                     case FormShipEnum.T:
-                        positionsBateau.AddRange(PlacerBateauT());
+                        positionsBateau.AddRange(PlacerBateauT(isRobot));
                         break;
                 }
 
@@ -161,199 +171,288 @@
             return toutesLesPositions;
         }
 
-        private List<(int, int)> PlacerBateauL()
+        private List<(int, int)> PlacerBateauL(bool isRobot)
         {
             Console.WriteLine("Placement du bateau en forme de L (3 cases)");
             AfficherGrilleJoueur();
+            Random rnd = new Random();
+
+            List<(int, int)> GenererPositions(int x, int y, int orientation)
+            {
+                return orientation switch
+                {
+                    1 => new List<(int, int)> { (x, y), (x + 1, y), (x, y + 1) },
+                    2 => new List<(int, int)> { (x, y), (x - 1, y), (x, y + 1) },
+                    3 => new List<(int, int)> { (x, y), (x - 1, y), (x, y - 1) },
+                    4 => new List<(int, int)> { (x, y), (x + 1, y), (x, y - 1) },
+                    _ => new List<(int, int)>(),
+                };
+            }
 
             while (true)
             {
-                Console.WriteLine("Choisir la position du coin du L:");
-                var (x, y) = DemanderPosition();
+                int x, y, orientation;
 
-                Console.WriteLine("Choisir l'orientation du L:");
-                Console.WriteLine("1. L normal (coin en haut-gauche)");
-                Console.WriteLine("2. L tourné 90° (coin en bas-gauche)");
-                Console.WriteLine("3. L tourné 180° (coin en bas-droite)");
-                Console.WriteLine("4. L tourné 270° (coin en haut-droite)");
-
-                if (int.TryParse(Console.ReadLine(), out int orientation) && orientation >= 1 && orientation <= 4)
+                if (isRobot)
                 {
-                    List<(int, int)> positions = new List<(int, int)>();
+                    x = rnd.Next(0, settings.LargeurTableau);
+                    y = rnd.Next(0, settings.HauteurTableau);
+                    orientation = rnd.Next(1, 5);
+                }
+                else
+                {
+                    Console.WriteLine("Choisir la position du coin du L:");
+                    (x, y) = DemanderPosition();
 
-                    switch (orientation)
-                    {
-                        case 1: // L normal
-                            positions = new List<(int, int)> { (x, y), (x + 1, y), (x, y + 1) };
-                            break;
-                        case 2: // L tourné 90°
-                            positions = new List<(int, int)> { (x, y), (x - 1, y), (x, y + 1) };
-                            break;
-                        case 3: // L tourné 180°
-                            positions = new List<(int, int)> { (x, y), (x - 1, y), (x, y - 1) };
-                            break;
-                        case 4: // L tourné 270°
-                            positions = new List<(int, int)> { (x, y), (x + 1, y), (x, y - 1) };
-                            break;
-                    }
+                    Console.WriteLine("Choisir l'orientation du L:");
+                    Console.WriteLine("1. L normal (coin en haut-gauche)");
+                    Console.WriteLine("2. L tourné 90° (coin en bas-gauche)");
+                    Console.WriteLine("3. L tourné 180° (coin en bas-droite)");
+                    Console.WriteLine("4. L tourné 270° (coin en haut-droite)");
 
-                    if (PositionsValides(positions))
+                    if (!int.TryParse(Console.ReadLine(), out orientation) || orientation < 1 || orientation > 4)
                     {
-                        return positions;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Orientation invalide. Réessayez.");
+                        Console.ResetColor();
+                        continue;
                     }
                 }
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Position ou orientation invalide. Réessayez.");
-                Console.ResetColor();
+                var positions = GenererPositions(x, y, orientation);
+
+                if (PositionsValides(positions))
+                {
+                    return positions;
+                }
+
+                if (!isRobot)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Position ou orientation invalide. Réessayez.");
+                    Console.ResetColor();
+                }
             }
         }
 
-        private List<(int, int)> PlacerBateauI()
+
+        private List<(int, int)> PlacerBateauI(bool isRobot)
         {
             Console.WriteLine("Placement du bateau en forme de I (ligne droite de 4 cases)");
             AfficherGrilleJoueur();
+            Random rnd = new Random();
 
             while (true)
             {
-                Console.WriteLine("Choisir la première extrémité du bateau:");
-                var (x, y) = DemanderPosition();
+                int x, y, orientation;
 
-                Console.WriteLine("Choisir l'orientation:");
-                Console.WriteLine("1. Horizontal (vers la droite)");
-                Console.WriteLine("2. Vertical (vers le bas)");
-
-                if (int.TryParse(Console.ReadLine(), out int orientation) && (orientation == 1 || orientation == 2))
+                if (isRobot)
                 {
-                    List<(int, int)> positions = new List<(int, int)>();
+                    x = rnd.Next(0, settings.LargeurTableau);
+                    y = rnd.Next(0, settings.HauteurTableau);
+                    orientation = rnd.Next(1, 3); // 1 ou 2
+                }
+                else
+                {
+                    Console.WriteLine("Choisir la première extrémité du bateau:");
+                    (x, y) = DemanderPosition();
 
-                    if (orientation == 1) // Horizontal
-                    {
-                        positions = new List<(int, int)> { (x, y), (x, y + 1), (x, y + 2), (x, y + 3) };
-                    }
-                    else // Vertical
-                    {
-                        positions = new List<(int, int)> { (x, y), (x + 1, y), (x + 2, y), (x + 3, y) };
-                    }
+                    Console.WriteLine("Choisir l'orientation:");
+                    Console.WriteLine("1. Horizontal (vers la droite)");
+                    Console.WriteLine("2. Vertical (vers le bas)");
 
-                    if (PositionsValides(positions))
+                    if (!int.TryParse(Console.ReadLine(), out orientation) || (orientation != 1 && orientation != 2))
                     {
-                        return positions;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Orientation invalide. Réessayez.");
+                        Console.ResetColor();
+                        continue;
                     }
                 }
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Position ou orientation invalide. Réessayez.");
-                Console.ResetColor();
+                List<(int, int)> positions = new List<(int, int)>();
+
+                if (orientation == 1) // Horizontal
+                {
+                    positions = new List<(int, int)> { (x, y), (x, y + 1), (x, y + 2), (x, y + 3) };
+                }
+                else // Vertical
+                {
+                    positions = new List<(int, int)> { (x, y), (x + 1, y), (x + 2, y), (x + 3, y) };
+                }
+
+                if (PositionsValides(positions))
+                {
+                    return positions;
+                }
+
+                if (!isRobot)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Position ou orientation invalide. Réessayez.");
+                    Console.ResetColor();
+                }
             }
         }
 
-        private List<(int, int)> PlacerBateauX()
+        private List<(int, int)> PlacerBateauX(bool isRobot)
         {
             Console.WriteLine("Placement du bateau en forme de X (5 cases en croix)");
             AfficherGrilleJoueur();
+            Random rnd = new Random();
 
             while (true)
             {
-                Console.WriteLine("Choisir la position du centre du X:");
-                var (x, y) = DemanderPosition();
+                int x, y;
+
+                if (isRobot)
+                {
+                    x = rnd.Next(0, settings.LargeurTableau);
+                    y = rnd.Next(0, settings.HauteurTableau);
+                }
+                else
+                {
+                    Console.WriteLine("Choisir la position du centre du X:");
+                    (x, y) = DemanderPosition();
+                }
 
                 List<(int, int)> positions = new List<(int, int)>
-                    {
-                        (x, y),         // Centre
-                        (x - 1, y),     // Gauche
-                        (x + 1, y),     // Droite
-                        (x, y - 1),     // Haut
-                        (x, y + 1)      // Bas
-                    };
+        {
+            (x, y),         // Centre
+            (x - 1, y),     // Gauche
+            (x + 1, y),     // Droite
+            (x, y - 1),     // Haut
+            (x, y + 1)      // Bas
+        };
 
                 if (PositionsValides(positions))
                 {
                     return positions;
                 }
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Position invalide. Le X doit tenir entièrement dans la grille. Réessayez.");
-                Console.ResetColor();
+                if (!isRobot)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Position invalide. Le X doit tenir entièrement dans la grille. Réessayez.");
+                    Console.ResetColor();
+                }
             }
         }
 
-        private List<(int, int)> PlacerBateauO()
+        private List<(int, int)> PlacerBateauO(bool isRobot)
         {
             Console.WriteLine("Placement du bateau en forme de O (carré de 4 cases)");
             AfficherGrilleJoueur();
+            Random rnd = new Random();
 
             while (true)
             {
-                Console.WriteLine("Choisir la position du coin supérieur gauche du carré:");
-                var (x, y) = DemanderPosition();
+                int x, y;
+
+                if (isRobot)
+                {
+                    x = rnd.Next(0, settings.LargeurTableau);
+                    y = rnd.Next(0, settings.HauteurTableau);
+                }
+                else
+                {
+                    Console.WriteLine("Choisir la position du coin supérieur gauche du carré:");
+                    (x, y) = DemanderPosition();
+                }
 
                 List<(int, int)> positions = new List<(int, int)>
-                {
-                    (x, y),         // Coin supérieur gauche
-                    (x + 1, y),     // Coin supérieur droit
-                    (x, y + 1),     // Coin inférieur gauche
-                    (x + 1, y + 1)  // Coin inférieur droit
-                };
+        {
+            (x, y),         // Coin supérieur gauche
+            (x + 1, y),     // Coin supérieur droit
+            (x, y + 1),     // Coin inférieur gauche
+            (x + 1, y + 1)  // Coin inférieur droit
+        };
 
                 if (PositionsValides(positions))
                 {
                     return positions;
                 }
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Position invalide. Le carré doit tenir entièrement dans la grille. Réessayez.");
-                Console.ResetColor();
+                if (!isRobot)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Position invalide. Le carré doit tenir entièrement dans la grille. Réessayez.");
+                    Console.ResetColor();
+                }
             }
         }
 
-        private List<(int, int)> PlacerBateauT()
+        private List<(int, int)> PlacerBateauT(bool isRobot)
         {
             Console.WriteLine("Placement du bateau en forme de T (4 cases)");
             AfficherGrilleJoueur();
+            Random rnd = new Random();
 
             while (true)
             {
-                Console.WriteLine("Choisir la position du coin inférieur gauche du T:");
-                var (x, y) = DemanderPosition();
+                int x, y, orientation;
 
-                Console.WriteLine("Choisir l'orientation du T:");
-                Console.WriteLine("1. T normal (ouverture vers la haut)");
-                Console.WriteLine("2. T tourné 90° (ouverture vers le gauche)");
-                Console.WriteLine("3. T tourné 180° (ouverture vers la bas)");
-                Console.WriteLine("4. T tourné 270° (ouverture vers le droite)");
-
-                if (int.TryParse(Console.ReadLine(), out int orientation) && orientation >= 1 && orientation <= 4)
+                if (isRobot)
                 {
-                    List<(int, int)> positions = new List<(int, int)>();
+                    x = rnd.Next(0, settings.LargeurTableau);
+                    y = rnd.Next(0, settings.HauteurTableau);
+                    orientation = rnd.Next(1, 5); // entre 1 et 4 inclus
+                }
+                else
+                {
+                    Console.WriteLine("Choisir la position du coin inférieur gauche du T:");
+                    (x, y) = DemanderPosition();
 
-                    switch (orientation)
-                    {
-                        case 1: // P normal
-                            positions = new List<(int, int)> { (x, y), (x, y - 1), (x, y - 2), (x + 1, y - 1) };
-                            break;
-                        case 2: // P tourné 90°
-                            positions = new List<(int, int)> { (x, y), (x + 1, y), (x + 2, y), (x + 1, y + 1) };
-                            break;
-                        case 3: // P tourné 180°
-                            positions = new List<(int, int)> { (x, y), (x, y + 1), (x, y + 2), (x - 1, y + 1) };
-                            break;
-                        case 4: // P tourné 270°
-                            positions = new List<(int, int)> { (x, y), (x - 1, y), (x - 2, y), (x - 1, y - 1) };
-                            break;
-                    }
+                    Console.WriteLine("Choisir l'orientation du T:");
+                    Console.WriteLine("1. T normal (ouverture vers la haut)");
+                    Console.WriteLine("2. T tourné 90° (ouverture vers le gauche)");
+                    Console.WriteLine("3. T tourné 180° (ouverture vers la bas)");
+                    Console.WriteLine("4. T tourné 270° (ouverture vers le droite)");
 
-                    if (PositionsValides(positions))
+                    if (!int.TryParse(Console.ReadLine(), out orientation) || orientation < 1 || orientation > 4)
                     {
-                        return positions;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Orientation invalide. Réessayez.");
+                        Console.ResetColor();
+                        continue;
                     }
                 }
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Position ou orientation invalide. Réessayez.");
-                Console.ResetColor();
+                List<(int, int)> positions;
+
+                switch (orientation)
+                {
+                    case 1: // T normal
+                        positions = new List<(int, int)> { (x, y), (x, y - 1), (x, y - 2), (x + 1, y - 1) };
+                        break;
+                    case 2: // T tourné 90°
+                        positions = new List<(int, int)> { (x, y), (x + 1, y), (x + 2, y), (x + 1, y + 1) };
+                        break;
+                    case 3: // T tourné 180°
+                        positions = new List<(int, int)> { (x, y), (x, y + 1), (x, y + 2), (x - 1, y + 1) };
+                        break;
+                    case 4: // T tourné 270°
+                        positions = new List<(int, int)> { (x, y), (x - 1, y), (x - 2, y), (x - 1, y - 1) };
+                        break;
+                    default:
+                        positions = new List<(int, int)>();
+                        break;
+                }
+
+                if (PositionsValides(positions))
+                {
+                    return positions;
+                }
+
+                if (!isRobot)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Position ou orientation invalide. Réessayez.");
+                    Console.ResetColor();
+                }
             }
         }
+
 
         private bool PositionsValides(List<(int, int)> positions)
         {

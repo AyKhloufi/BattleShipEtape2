@@ -13,6 +13,7 @@ using System.Text;
 // O : OK : string vide
 // W : Tu as gagné : string vide 
 // S : reception des settings
+// I : Indique si le client veut jouer contre une Ia
 
 namespace Serveur_Battleship.models
 {
@@ -23,6 +24,7 @@ namespace Serveur_Battleship.models
         public static Battleship battleship;
         public static bool replay = true;
         private static Socket listener;
+        public static bool isRobot = false;
 
         public static void StartServer()
         {
@@ -83,6 +85,8 @@ namespace Serveur_Battleship.models
         {
             try
             {
+                Message m;
+                byte[] msg;
                 data = "";
                 while (!data.Contains('|'))
                 {
@@ -91,15 +95,26 @@ namespace Serveur_Battleship.models
                 }
                 data = data.Substring(0, data.IndexOf('|'));
 
-                Message m = JsonConvert.DeserializeObject<Message>(data);
+                m = JsonConvert.DeserializeObject<Message>(data);
+                isRobot = JsonConvert.DeserializeObject<bool>(m.LeMessage);
+
+
+                data = "";
+                while (!data.Contains('|'))
+                {
+                    int bytesRec = handler.Receive(bytes);
+                    data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
+                }
+                data = data.Substring(0, data.IndexOf('|'));
+
+                m = JsonConvert.DeserializeObject<Message>(data);
                 Settings settings = JsonConvert.DeserializeObject<Settings>(m.LeMessage);
 
                 m = new Message('O', string.Empty);
-                byte[] msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
+                msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
                 handler.Send(msg);
 
                 battleship = new Battleship(settings);
-
                 msg = PlacerBateau(battleship);
                 handler.Send(msg);
 
@@ -197,7 +212,7 @@ namespace Serveur_Battleship.models
 
         public static byte[] PlacerBateau(Battleship battleship)
         {
-            List<(int, int)> coords = battleship.PlacerBateau();
+            List<(int, int)> coords = battleship.PlacerBateau(isRobot);
             Message m = new Message('C', JsonConvert.SerializeObject(coords));
             return Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
         }
@@ -326,6 +341,7 @@ namespace Serveur_Battleship.models
 
         public static void Attaquer()
         {
+            // TODO AttaquerRobot()
             (int, int) coordsAttack = battleship.Attaquer();
 
             Message m = new Message('A', JsonConvert.SerializeObject(coordsAttack));
@@ -393,6 +409,7 @@ namespace Serveur_Battleship.models
 
                     PlacerBateauAdverse(m.LeMessage);
 
+                    // PlacerBateauRobot
                     msg = PlacerBateau(battleship);
                     handler.Send(msg);
                 }

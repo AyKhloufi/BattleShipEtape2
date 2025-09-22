@@ -47,8 +47,24 @@ namespace Client_Battleship.Model
 
                         Console.WriteLine("La connexion à l'hôte est bien établie");
 
+
+                        Message m;
+                        byte[] msg;
+                        Console.Write("Voulez vous jouer contre un ordinateur (y/n) : ");
+                        string str = Console.ReadLine().ToLower();
+                        if (str == "y")
+                        {
+                            m = new Message('I', JsonConvert.SerializeObject(true));
+                        }
+                        else
+                        {
+                            m = new Message('I', JsonConvert.SerializeObject(true));
+                        }
+                        msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
+                        sender.Send(msg);
+
                         Message message = Setting();
-                        byte[] msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(message) + "|");
+                        msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(message) + "|");
                         sender.Send(msg);
                         data = "";
                         while (!data.Contains('|'))
@@ -174,7 +190,7 @@ namespace Client_Battleship.Model
         }
         private static Message PlaceShipMessage()
         {
-            List<(int, int)> coords = battleship.PlacerBateau();
+            List<(int, int)> coords = battleship.PlacerBateau(false);
             return new Message('C', JsonConvert.SerializeObject(coords));
         }
 

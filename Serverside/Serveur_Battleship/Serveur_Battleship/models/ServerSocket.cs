@@ -209,13 +209,13 @@ namespace Serveur_Battleship.models
             catch { }
         }
 
-
         public static byte[] PlacerBateau(Battleship battleship)
         {
             List<(int, int)> coords = battleship.PlacerBateau(isRobot);
             Message m = new Message('C', JsonConvert.SerializeObject(coords));
             return Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
         }
+
         public static void PlacerBateauAdverse(string leMessage)
         {
             List<(int, int)> coords = JsonConvert.DeserializeObject<List<(int, int)>>(leMessage);
@@ -247,23 +247,83 @@ namespace Serveur_Battleship.models
 
         public static void AttaquerAdverse(string leMessage)
         {
+            byte[] msg;
+            byte[] bytes = new byte[32];
             (int, int) coordsAttack = JsonConvert.DeserializeObject<(int, int)>(leMessage);
             bool valide = CoupEstValide(coordsAttack);
 
             Message m = new Message('V', JsonConvert.SerializeObject(false));
-            bool touche= false;
+            bool touche = false;
             if (valide)
             {
                 touche = battleship.AttaquerPosition(coordsAttack.Item1, coordsAttack.Item2);
                 Console.Clear();
                 battleship.AfficherGrilleAdversaire();
                 battleship.AfficherGrilleJoueur();
-                m = new Message('V', JsonConvert.SerializeObject(true));
+
+                if (battleship.EstCoule())
+                {
+                    Console.WriteLine("Tu as perdu ...");
+                    m = new Message('W', "");
+                    msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
+                    handler.Send(msg);
+                    data = "";
+                    while (!data.Contains('|'))
+                    {
+                        int bytesRec = handler.Receive(bytes);
+                        data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
+                    }
+                    data = data.Substring(0, data.IndexOf('|'));
+                    m = JsonConvert.DeserializeObject<Message>(data);
+                    if (m.Code == 'R')
+                    {
+                        bool rejouer = JsonConvert.DeserializeObject<bool>(m.LeMessage);
+                        //le serveur a gagné et on sait si le client veut rejouer
+                        if (rejouer)
+                        {
+                            Console.Clear();
+                            Console.WriteLine("Le client veut rejouer ...");
+                            battleship.ClearBattleShip();
+                            m = new Message('R', "");
+                            msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
+                            handler.Send(msg);
+
+                            data = "";
+                            while (!data.Contains('|'))
+                            {
+                                int bytesRec = handler.Receive(bytes);
+                                data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
+                            }
+                            data = data.Substring(0, data.IndexOf('|'));
+                            m = JsonConvert.DeserializeObject<Message>(data);
+
+                            PlacerBateauAdverse(m.LeMessage);
+
+                            msg = PlacerBateau(battleship);
+                            handler.Send(msg);
+                            Console.Clear();
+                            battleship.AfficherGrilleAdversaire();
+                            battleship.AfficherGrilleJoueur();
+                            return;
+                        }
+                        else
+                        {
+                            replay = false;
+                            return;
+                        }
+
+                    }
+                }
+                else
+                {
+                    m = new Message('V', JsonConvert.SerializeObject(true));
+                }
             }
-            byte[] msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
+            msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
             handler.Send(msg);
 
-            byte[] bytes = new byte[32];
+
+            bytes = new byte[32];
             data = "";
             while (!data.Contains('|'))
             {
@@ -273,69 +333,16 @@ namespace Serveur_Battleship.models
             data = data.Substring(0, data.IndexOf('|'));
             m = JsonConvert.DeserializeObject<Message>(data);
 
-
-            if (battleship.EstCoule())
-            {
-                Console.WriteLine("Tu as perdu ...");
-                m = new Message('W', "");
-                msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
-                handler.Send(msg);
-                data = "";
-                while (!data.Contains('|'))
-                {
-                    int bytesRec = handler.Receive(bytes);
-                    data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
-                }
-                data = data.Substring(0, data.IndexOf('|'));
-                m = JsonConvert.DeserializeObject<Message>(data);
-                if (m.Code == 'R')
-                {
-                    bool rejouer = JsonConvert.DeserializeObject<bool>(m.LeMessage);
-                    //le serveur a gagné et on sait si le client veut rejouer
-                    if (rejouer)
-                    {
-                        Console.Clear();
-                        battleship.ClearBattleShip();
-                        m = new Message('R', "");
-                        msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
-                        handler.Send(msg);
-
-                        data = "";
-                        while (!data.Contains('|'))
-                        {
-                            int bytesRec = handler.Receive(bytes);
-                            data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
-                        }
-                        data = data.Substring(0, data.IndexOf('|'));
-                        m = JsonConvert.DeserializeObject<Message>(data);
-
-                        PlacerBateauAdverse(m.LeMessage);
-
-                        msg = PlacerBateau(battleship);
-                        handler.Send(msg);
-                    }
-                    else
-                    {
-                        replay = false;
-                        return;
-                    }
-
-                }
-            }
-            else if (touche)
-            {
-                Console.Clear();
-                battleship.AfficherGrilleAdversaire();
-                battleship.AfficherGrilleJoueur();
-                AttaquerAdverse(m.LeMessage);
-
-            }
-            else
+            if(m.Code == 'O')
             {
                 Console.Clear();
                 battleship.AfficherGrilleAdversaire();
                 battleship.AfficherGrilleJoueur();
                 Attaquer();
+            }
+            else
+            {
+                AttaquerAdverse(m.LeMessage);
             }
         }
 
@@ -393,6 +400,7 @@ namespace Serveur_Battleship.models
                 if (rejouer)
                 {
                     Console.Clear();
+                    Console.WriteLine("Le client veut rejouer ...");
                     battleship.ClearBattleShip();
                     m = new Message('R', "");
                     msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
@@ -411,6 +419,9 @@ namespace Serveur_Battleship.models
 
                     // PlacerBateauRobot
                     msg = PlacerBateau(battleship);
+                    Console.Clear();
+                    battleship.AfficherGrilleAdversaire();
+                    battleship.AfficherGrilleJoueur();
                     handler.Send(msg);
                 }
                 else

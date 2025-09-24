@@ -309,13 +309,13 @@ namespace BattleShipLibrary
                 }
 
                 List<(int, int)> positions = new List<(int, int)>
-        {
-            (x, y),         // Centre
-            (x - 1, y),     // Gauche
-            (x + 1, y),     // Droite
-            (x, y - 1),     // Haut
-            (x, y + 1)      // Bas
-        };
+                    {
+                        (x, y),         // Centre
+                        (x - 1, y),     // Gauche
+                        (x + 1, y),     // Droite
+                        (x, y - 1),     // Haut
+                        (x, y + 1)      // Bas
+                    };
 
                 if (PositionsValides(positions))
                 {
@@ -353,12 +353,12 @@ namespace BattleShipLibrary
                 }
 
                 List<(int, int)> positions = new List<(int, int)>
-        {
-            (x, y),         // Coin supérieur gauche
-            (x + 1, y),     // Coin supérieur droit
-            (x, y + 1),     // Coin inférieur gauche
-            (x + 1, y + 1)  // Coin inférieur droit
-        };
+                    {
+                        (x, y),         // Coin supérieur gauche
+                        (x + 1, y),     // Coin supérieur droit
+                        (x, y + 1),     // Coin inférieur gauche
+                        (x + 1, y + 1)  // Coin inférieur droit
+                    };
 
                 if (PositionsValides(positions))
                 {

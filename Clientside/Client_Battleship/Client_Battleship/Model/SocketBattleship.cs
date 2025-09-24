@@ -21,10 +21,10 @@ namespace Client_Battleship.Model
 {
     public static class SocketBattleship
     {
-        static Battleship battleship = null;
-    
+        static Battleship battleship = null;    
         public static string data = null;
         public static (int, int) lastAttack;
+
         public static void StartClient()
         {
             byte[] bytes = new byte[16];
@@ -188,6 +188,7 @@ namespace Client_Battleship.Model
             lastAttack = coords;
             return new Message('A', JsonConvert.SerializeObject(coords));
         }
+
         private static Message PlaceShipMessage()
         {
             List<(int, int)> coords = battleship.PlacerBateau(false);

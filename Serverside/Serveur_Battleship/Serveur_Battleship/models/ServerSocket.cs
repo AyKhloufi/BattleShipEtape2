@@ -348,8 +348,11 @@ namespace Serveur_Battleship.models
 
         public static void Attaquer()
         {
-            // TODO AttaquerRobot()
-            (int, int) coordsAttack = battleship.Attaquer();
+            (int, int) coordsAttack;
+            if (isRobot)
+                coordsAttack = battleship.AttaqueRobot();
+            else
+                coordsAttack = battleship.Attaquer();
 
             Message m = new Message('A', JsonConvert.SerializeObject(coordsAttack));
             byte[] msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");

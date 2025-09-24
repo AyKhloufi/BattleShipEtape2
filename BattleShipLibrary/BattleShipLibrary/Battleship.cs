@@ -36,7 +36,7 @@ namespace BattleShipLibrary
         private void AfficherGrille(char[,] plateau, bool isOpponent)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Bateau : @\t| Toucher : #\t | Manquer : *\t | Vide : ~");
+            Console.WriteLine("Bateau : @   | Toucher : #    | Manquer : *    | Vide : ~");
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write(" y\\x");
             for (int j = 1; j <= settings.LargeurTableau; j++)
@@ -66,19 +66,18 @@ namespace BattleShipLibrary
             }
         }
 
-
         public void AfficherGrilleJoueur()
         {
             Console.WriteLine("\nTon plateau : ");
             AfficherGrille(grille, false);
         }
 
-
         public void AfficherGrilleAdversaire()
         {
             Console.WriteLine("\nPlateau de l'adversaire : ");
             AfficherGrille(grilleAdversaire, true);
         }
+
         private (int, int) DemanderPosition()
         {
             int x, y;
@@ -118,7 +117,6 @@ namespace BattleShipLibrary
                 }
             }
         }
-
 
         public List<(int, int)> PlacerBateau(bool isRobot)
         {
@@ -226,7 +224,6 @@ namespace BattleShipLibrary
                 }
             }
         }
-
 
         private List<(int, int)> PlacerBateauI(bool isRobot)
         {
@@ -445,7 +442,6 @@ namespace BattleShipLibrary
             }
         }
 
-
         private bool PositionsValides(List<(int, int)> positions)
         {
             foreach (var (x, y) in positions)
@@ -490,6 +486,55 @@ namespace BattleShipLibrary
             }
 
             return coords;
+        }
+
+        public (int, int) AttaqueRobot()
+        {
+            // Recherche des positions touchées sans bateau coulé autour
+            List<(int, int)> casesTouches = new List<(int, int)>();
+            for (int i = 0; i < settings.HauteurTableau; i++)
+            {
+                for (int j = 0; j < settings.LargeurTableau; j++)
+                {
+                    if (grilleAdversaire[i, j] == TOUCHER)
+                        casesTouches.Add((i, j));
+                }
+            }
+
+            // Si au moins une case touchée, essaie autour
+            foreach (var touch in casesTouches)
+            {
+                var voisins = new (int, int)[]
+                {
+                    (touch.Item1 - 1, touch.Item2), // haut
+                    (touch.Item1 + 1, touch.Item2), // bas
+                    (touch.Item1, touch.Item2 - 1), // gauche
+                    (touch.Item1, touch.Item2 + 1)  // droite
+                };
+
+                foreach (var voisin in voisins)
+                {
+                    int x = voisin.Item1, y = voisin.Item2;
+                    if (x >= 0 && x < settings.HauteurTableau &&
+                        y >= 0 && y < settings.LargeurTableau &&
+                        grilleAdversaire[y, x] == VIDE)
+                    {
+                        return (y, x);
+                    }
+                }
+            }
+
+            // Sinon, tir complètement aléatoire
+            Random rnd = new Random();
+            int rx, ry;
+            do
+            {
+                rx = rnd.Next(0, settings.HauteurTableau);
+                ry = rnd.Next(0, settings.LargeurTableau);
+            }
+            while (grilleAdversaire[ry, rx] != VIDE);
+
+            return (ry, rx);
         }
 
         public bool AttaquerPosition(int x, int y)
@@ -559,7 +604,6 @@ namespace BattleShipLibrary
             Console.ResetColor();
         }
 
-
         public bool EstCoule()
         {
             foreach (var (x, y) in positionsBateau)
@@ -569,7 +613,6 @@ namespace BattleShipLibrary
             }
             return true;
         }
-
 
         public void ClearBattleShip()
         {
@@ -642,7 +685,6 @@ namespace BattleShipLibrary
             return settings;
         }
 
-
         public static void DemanderCouleur(Settings settings)
         {
             ConsoleColor consoleColor;
@@ -687,7 +729,6 @@ namespace BattleShipLibrary
             }
             settings.AddColorOfConsole(VIDE, consoleColor);
         }
-
 
         public static class BattleshipSerializer
         {

@@ -168,6 +168,10 @@ namespace Client_Battleship.Model
             while (true)
             {
                 Console.Clear();
+                battleship.AfficherGrilleAdversaire();
+                battleship.AfficherGrilleJoueur();
+                Console.WriteLine("\n*** Vous avez perdu ***\n");
+
                 Console.WriteLine("Voulez-vous rejouer? [y/n]");
                 string str = Console.ReadLine().ToLower();
                 if (str == "y") 

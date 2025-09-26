@@ -512,12 +512,12 @@ namespace BattleShipLibrary
                     (touch.Item1, touch.Item2 + 1)  // droite
                 };
 
-                foreach (var voisin in voisins)
+                foreach (var voisin in voisins) 
                 {
                     int x = voisin.Item1, y = voisin.Item2;
                     if (x >= 0 && x < settings.HauteurTableau &&
                         y >= 0 && y < settings.LargeurTableau &&
-                        grilleAdversaire[y, x] == VIDE)
+                        (grilleAdversaire[y, x] == VIDE || grilleAdversaire[y, x] == BATEAU))
                     {
                         return (y, x);
                     }
@@ -531,8 +531,9 @@ namespace BattleShipLibrary
             {
                 rx = rnd.Next(0, settings.HauteurTableau);
                 ry = rnd.Next(0, settings.LargeurTableau);
+                char coord = grilleAdversaire[ry, rx];
             }
-            while (grilleAdversaire[ry, rx] != VIDE);
+            while (grilleAdversaire[ry, rx] != VIDE && grilleAdversaire[ry, rx] != BATEAU);
 
             return (ry, rx);
         }

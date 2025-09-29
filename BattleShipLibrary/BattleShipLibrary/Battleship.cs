@@ -185,8 +185,8 @@ namespace BattleShipLibrary
 
                 if (isRobot)
                 {
-                    x = rnd.Next(0, settings.LargeurTableau);
-                    y = rnd.Next(0, settings.HauteurTableau);
+                    y = rnd.Next(0, settings.LargeurTableau);
+                    x = rnd.Next(0, settings.HauteurTableau);
                     orientation = rnd.Next(1, 5);
                 }
                 else
@@ -237,8 +237,8 @@ namespace BattleShipLibrary
 
                 if (isRobot)
                 {
-                    x = rnd.Next(0, settings.LargeurTableau);
-                    y = rnd.Next(0, settings.HauteurTableau);
+                    y = rnd.Next(0, settings.LargeurTableau);
+                    x = rnd.Next(0, settings.HauteurTableau);
                     orientation = rnd.Next(1, 3); // 1 ou 2
                 }
                 else
@@ -296,8 +296,8 @@ namespace BattleShipLibrary
 
                 if (isRobot)
                 {
-                    x = rnd.Next(0, settings.LargeurTableau);
-                    y = rnd.Next(0, settings.HauteurTableau);
+                    y = rnd.Next(0, settings.LargeurTableau);
+                    x = rnd.Next(0, settings.HauteurTableau);
                 }
                 else
                 {
@@ -340,8 +340,8 @@ namespace BattleShipLibrary
 
                 if (isRobot)
                 {
-                    x = rnd.Next(0, settings.LargeurTableau);
-                    y = rnd.Next(0, settings.HauteurTableau);
+                    y = rnd.Next(0, settings.LargeurTableau);
+                    x = rnd.Next(0, settings.HauteurTableau);
                 }
                 else
                 {
@@ -517,9 +517,9 @@ namespace BattleShipLibrary
                     int x = voisin.Item1, y = voisin.Item2;
                     if (x >= 0 && x < settings.HauteurTableau &&
                         y >= 0 && y < settings.LargeurTableau &&
-                        (grilleAdversaire[y, x] == VIDE || grilleAdversaire[y, x] == BATEAU))
+                        (grilleAdversaire[x, y] == VIDE || grilleAdversaire[x, y] == BATEAU))
                     {
-                        return (y, x);
+                        return (x, y);
                     }
                 }
             }
@@ -531,11 +531,10 @@ namespace BattleShipLibrary
             {
                 rx = rnd.Next(0, settings.HauteurTableau);
                 ry = rnd.Next(0, settings.LargeurTableau);
-                char coord = grilleAdversaire[ry, rx];
             }
-            while (grilleAdversaire[ry, rx] != VIDE && grilleAdversaire[ry, rx] != BATEAU);
+            while (grilleAdversaire[rx, ry] != VIDE && grilleAdversaire[rx, ry] != BATEAU);
 
-            return (ry, rx);
+            return (rx, ry);
         }
 
         public bool AttaquerPosition(int x, int y)

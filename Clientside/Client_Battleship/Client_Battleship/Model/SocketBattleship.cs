@@ -58,7 +58,7 @@ namespace Client_Battleship.Model
                         }
                         else
                         {
-                            m = new Message('I', JsonConvert.SerializeObject(true));
+                            m = new Message('I', JsonConvert.SerializeObject(false));
                         }
                         msg = Encoding.ASCII.GetBytes(JsonConvert.SerializeObject(m) + "|");
                         sender.Send(msg);
@@ -211,7 +211,7 @@ namespace Client_Battleship.Model
             (int, int) coords = JsonConvert.DeserializeObject<(int, int)>(message.LeMessage);
             //Si oui out of bounds
             if(coords.Item1 < 0 || coords.Item2 < 0 ||
-                coords.Item1 > battleship.settings.LargeurTableau || coords.Item2 > battleship.settings.HauteurTableau)
+                coords.Item1 > battleship.settings.HauteurTableau || coords.Item2 > battleship.settings.LargeurTableau)
             {
                 return new Message('V', JsonConvert.SerializeObject(false));
             }

@@ -122,6 +122,7 @@ namespace Client_Battleship.Model
                                     sendMessage = ReplayMessage();
                                     break;
                                 case 'R':
+                                    Console.Clear();
                                     sendMessage = PlaceShipMessage();
                                     break;
                                 default:
